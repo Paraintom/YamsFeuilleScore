@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Yam's feuille de score</title>
+		<link rel="stylesheet" href="./bulma.0.9.0.css">
+		<script src="./vue.3.0.0-rc.10.js"></script>
+		<script src="./score-input-setter-component.js"></script>
+		<style>		
+		body{
+			font-family: Geneva,Tahoma,Verdana,sans-serif; 
+			margin:1rem;
+			font-size: 1.02rem;
+		}
+		.firstColumns {
+			width:15%;
+			min-width:200px;
+		}
+		.manchesColumns {
+			width:15%;
+			min-width:200px;
+		}
+		h1 {
+			font-size: 3.5rem;
+		}
+
+		@media (max-width: 480px) {
+			html {
+				font-size: 24px;
+			}
+		}
+
+		@media (min-width: 480px) {
+			html {
+				font-size: 25px;
+			}
+		}
+
+		@media (min-width: 768px) {
+			html {
+				font-size: 26px;
+			}
+		}
+
+		@media (min-width: 992px) {
+			html {
+				font-size: 27px;
+			}
+		}
+
+		@media (min-width: 1200px) {
+			html {
+				font-size: 28px;
+			}
+		}
+		.disable-dbl-tap-zoom {
+			/*disable additional non-standard gestures such as double-tap to zoom*/
+			touch-action: manipulation;
+		}
+		</style>
+	</head>
+<body>
+	<div id="app" class="container grid-lg disable-dbl-tap-zoom">	  
+		<h1>Yam</h1>
+		<div class="columns">
+			<div class="column">
+				<table class="table is-striped is-narrow is-bordered is-fullwidth">
+				  <thead>
+					<tr>
+					  <th class="firstColumns">Les combinaisons</th>
+					  <th class="has-background-white-ter firstColumns">La marque</th>					  
+					  <th v-for="(value, index) in manches" :class="[manches[index].columnClass, 'manchesColumns']" @click="updateColumnColor(manches[index])">Manche {{index + 1}}</th>
+					</tr>
+				  </thead>
+				  <tbody>
+					<tr>
+					  <td>As</td>
+					  <td class="has-background-white-ter">Seuls les as comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'uns', 3)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].uns === 0 }]">{{formatResult(manchesCaculated[index].uns)}}</td>
+					</tr>
+					<tr>
+					  <td>Deux</td>
+					  <td class="has-background-white-ter">Seuls les 2 comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'deux', 6, 2)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].deux === 0 }]">{{formatResult(manchesCaculated[index].deux)}}</td>
+					</tr>
+					<tr>
+					  <td>Trois</td>
+					  <td class="has-background-white-ter">Seuls les 3 comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'trois', 9, 3)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].trois === 0 }]">{{formatResult(manchesCaculated[index].trois)}}</td>
+					</tr>
+					<tr>
+					  <td>Quatre</td>
+					  <td class="has-background-white-ter">Seuls les 4 comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'quatres', 12, 4)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].quatres === 0 }]">{{formatResult(manchesCaculated[index].quatres)}}</td>
+					</tr>
+					<tr>
+					  <td>Cinq</td>
+					  <td class="has-background-white-ter">Seuls les 5 comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'cinqs', 15, 5)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].cinqs === 0 }]">{{formatResult(manchesCaculated[index].cinqs)}}</td>
+					</tr>
+					<tr>
+					  <td>Six</td>
+					  <td class="has-background-white-ter">Seuls les 6 comptent</td>					  
+					  <td v-for="(value, index) in manches" @click="enterResult(manches[index],'six', 18, 6)" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].six === 0 }]">{{formatResult(manchesCaculated[index].six)}}</td>
+					</tr>
+					<tr>
+					  <td colspan=2><b>Total de la colonne</b></td>					  
+					  <td v-for="(value, index) in manches" >{{manchesCaculated[index].totalCol}}</td>
+					</tr>					
+					<tr>
+					  <td>Si le total de la colonne atteint 63</td>
+					  <td class="has-background-white-ter">Ajoutez une prime de 35</td>					  
+					  <td v-for="(value, index) in manches" >{{manchesCaculated[index].primeValidee ? '35' : ''}}</td>
+					</tr>					
+					<tr>
+					  <td class="has-background-white-ter"></td>
+					  <td class="has-background-white-ter"><b>Total 1</b></td>					  
+					  <td v-for="(value, index) in manches" class="has-background-white-ter">{{manchesCaculated[index].total1}}</td>
+					</tr>
+				  </tbody>
+				</table>
+				<table class="table is-striped is-narrow is-bordered is-fullwidth">
+				  <tbody>
+					<tr>
+					  <td class="firstColumns">Brelan</td>
+					  <td class="has-background-white-ter firstColumns">Tous les points comptent</td>
+					  
+					  <td v-for="(value, index) in manches" :class="['manchesColumns',manches[index].columnClass,{  'has-background-danger-light': manchesCaculated[index].brelan === 0 }]" @click="enterResult(manches[index],'brelan', 27)">{{formatResult(manchesCaculated[index].brelan)}}</td>
+					</tr>
+					<tr>
+					  <td>Petite suite</td>
+					  <td class="has-background-white-ter">15 points</td>					  
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].petiteSuite === 0 }]" @click="enterResult(manches[index],'petiteSuite', -1)">{{formatResult(manchesCaculated[index].petiteSuite ? 15 : manchesCaculated[index].petiteSuite)}}</td>
+					</tr>
+					<tr>
+					  <td>Grande suite</td>
+					  <td class="has-background-white-ter">20 points</td>					  
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].grandeSuite === 0 }]" @click="enterResult(manches[index],'grandeSuite', -1)">{{formatResult(manchesCaculated[index].grandeSuite ? 20 : manchesCaculated[index].grandeSuite)}}</td>
+					</tr>
+					<tr>
+					  <td>Full</td>
+					  <td class="has-background-white-ter">30 points</td>
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].full === 0 }]" @click="enterResult(manches[index],'full', -1)">{{formatResult(manchesCaculated[index].full ? 30 : manchesCaculated[index].full)}}</td>
+					</tr>
+					<tr>
+					  <td>Carr&eacute;</td>
+					  <td class="has-background-white-ter">40 points</td>					  
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].carre === 0 }]" @click="enterResult(manches[index],'carre', -1)">{{formatResult(manchesCaculated[index].carre ? 40 : manchesCaculated[index].carre)}}</td>
+					</tr>
+					<tr>
+					  <td>Yam</td>
+					  <td class="has-background-white-ter">50 points</td>
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].yam === 0 }]" @click="enterResult(manches[index],'yam', -1)">{{formatResult(manchesCaculated[index].yam ? 50 : manchesCaculated[index].yam)}}</td>
+					</tr>
+					<tr>
+					  <td>Chance</td>
+					  <td class="has-background-white-ter">La somme des cinq des</td>
+					  
+					  <td v-for="(value, index) in manches" :class="[manches[index].columnClass,{ 'has-background-danger-light': manchesCaculated[index].chance === 0 }]" @click="enterResult(manches[index],'chance', 23)">{{formatResult(manchesCaculated[index].chance)}}</td>
+					</tr>
+					<tr>
+					  <td>Total de la colonne</td>
+					  <td class="has-background-white-ter"><b>Total 2</b></td>					  
+					  <td v-for="(value, index) in manches">{{manchesCaculated[index].total2}}</td>
+					</tr>
+					<tr>
+					  <td colspan=2><b>Total g&eacute;n&eacute;ral 1+ 2</b></td>					  
+					  <td v-for="(value, index) in manches"><b>{{manchesCaculated[index].total}}</b></td>
+					</tr>					
+				  </tbody>
+				</table>
+			</div>
+		</div>
+		<score-input-setter ref="score-input-setter" @value-changed="handleValueChanged"/>
+	</div>
+</body>
+<script>
+
+const appSpec = {
+	data() {
+		return {
+			manches : [{},{},{}]
+		}
+	},
+	methods: {
+		updateColumnColor(manche){
+			if(manche.columnClass === 'has-background-warning-light'){
+				manche.columnClass = 'has-background-link-light';
+				return;
+			}
+			if(manche.columnClass === 'has-background-link-light'){
+				manche.columnClass = 'has-background-primary-light';
+				return;
+			}
+			if(manche.columnClass === 'has-background-primary-light'){
+				manche.columnClass = '';
+				return;
+			}
+			manche.columnClass = 'has-background-warning-light';
+		},
+		handleValueChanged(valueChanged){			
+			console.log('valueChanged received :');
+			console.log(valueChanged);
+			let choisi = valueChanged.value;
+			let manche = valueChanged.context.manche;
+			let property = valueChanged.context.property;
+			if(choisi === null || choisi === "" || choisi === false){
+				manche[property] = false;
+			}
+			else{
+				manche[property] = parseInt(choisi);
+			}
+		},
+		formatResult(result){
+			return result ? result : result === 0 ? '-' : '';
+		},
+		enterResult(manche, property, defaultValue, step = 1){
+			if(defaultValue === -1){
+				//C'est une valeur faux, vrai ou barré
+				manche[property] = manche[property] ? 0 : manche[property] === 0 ? false : true;
+			}
+			else{
+				let leLaOuLes = property === 'chance' ? 'la' : property === 'brelan' ? 'le' : 'les';		
+				let title = "Score pour " + leLaOuLes + " " + property;
+				this.$refs['score-input-setter'].show({manche,property}, title, manche[property] || defaultValue ,step);
+			}
+		},
+		calculManche(manche) {
+			const result = Object.assign({}, manche);
+
+			let totalCol = 0;
+			if ('uns' in manche){
+				totalCol += manche.uns;
+			}
+			if ('deux' in manche){
+				totalCol += manche.deux;
+			}
+			if ('trois' in manche){
+				totalCol += manche.trois;
+			}
+			if ('quatres' in manche){
+				totalCol += manche.quatres;
+			}
+			if ('cinqs' in manche){
+				totalCol += manche.cinqs;
+			}
+			if ('six' in manche){
+				totalCol += manche.six;
+			}
+			result.primeValidee = totalCol > 62;
+			result.totalCol = totalCol;
+			result.total1 = result.primeValidee ? (totalCol + 35) : totalCol;
+			
+			totalCol = 0;
+			if ('brelan' in manche){
+				totalCol += manche.brelan;
+			}
+			if ('petiteSuite' in manche && manche.petiteSuite){
+				totalCol += 15;
+			}
+			if ('grandeSuite' in manche && manche.grandeSuite){
+				totalCol += 20;
+			}
+			if ('full' in manche && manche.full){
+				totalCol += 30;
+			}
+			if ('carre' in manche && manche.carre){
+				totalCol += 40;
+			}
+			if ('yam' in manche && manche.yam){
+				totalCol += 50;
+			}			
+			if ('chance' in manche){
+				totalCol += manche.chance;
+			}
+			result.total2 = totalCol;
+			
+			result.total = result.total1 + result.total2;
+			return result;
+		}				
+	},
+	computed: {
+		manchesCaculated() {
+			let that = this;
+			return this.manches.map(o=>that.calculManche(o));
+		}
+	},
+	created: function () {
+		console.info("Application created.");
+	}
+}
+
+const appCreated = Vue.createApp(appSpec);
+appCreated.component('score-input-setter', scoreInputSetterComponent);
+const app = appCreated.mount('#app');
+</script>
+<script>
+	if('serviceWorker' in navigator) {
+	  navigator.serviceWorker
+			   .register('./sw.js')
+			   .then(function() { console.log("Service Worker Registered"); });
+	}
+</script>
+</html>
